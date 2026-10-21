@@ -226,6 +226,7 @@ let deals=[...DEALS_DEFAULT];
 let cust=[...CUST_DEFAULT];
 let invs=[...INVS_DEFAULT];
 const SK='rapport-data-v1',SD=JSON.stringify({deals:DEALS_DEFAULT,cust:CUST_DEFAULT,invs:INVS_DEFAULT});let lang='en';
+let chartMonths = '12M';
 
 try{
   const raw=localStorage.getItem(SK);
@@ -249,7 +250,8 @@ const T={"Overview":"Visão geral","Pipeline":"Funil","Customers":"Clientes","Sc
 const MO={Feb:'Fev',Apr:'Abr',May:'Mai',Aug:'Ago',Sep:'Set',Oct:'Out',Dec:'Dez'};
 const RU=[[/^Closes (.+)$/,(m,a)=>'Fecha em '+a],[/^Opened (.+)$/,(m,a)=>'Aberto em '+a],[/^Move to (.+) ›$/,(m,a)=>'Mover para '+(T[a]||a)+' ›'],[/^open across (\d+) deals$/,(m,a)=>'em aberto em '+a+' negócios'],[/^(\d+) h ago$/,(m,a)=>'há '+a+' h'],[/^(\d+) min ago$/,(m,a)=>'há '+a+' min'],[/^(\d+) d ago$/,(m,a)=>'há '+a+' d'],[/^(\d+) late$/,(m,a)=>a+' atrasadas'],[/^Invoice (RP-\d+)$/,(m,a)=>'Fatura '+a],[/^● (Due|Paid|Draft|Overdue)$/,(m,a)=>'● '+T[a]],[/^Won (\$.+)$/,(m,a)=>'Ganho '+a],[/^Target (.+)$/,(m,a)=>'Meta '+a],[/^(Enterprise|Mid-market|SMB) (\$.+)$/,(m,a,b)=>T[a]+' '+b],[/^Please pay by (.+), 2026 to (.+), quoting (.+)\.$/,(m,a,b,c)=>`Pague até ${a} de 2026 para ${b}, citando ${c}.`],[/^Paid in full on (.+), 2026 — thank you\.$/,(m,a)=>`Pago integralmente em ${a} de 2026 — obrigado.`],[/^Qty\s+Amount$/,()=>'Qtd Valor'],[/^collected in 6 months · 74% of (.+) invoiced$/,(m,a)=>`recebido em 6 meses · 74% de ${a} faturados`],[/^Won revenue\s+- - Monthly target · (.+)$/,(m,a)=>`Receita ganha - - Meta mensal · ${a}`],[/^(🏆|✕) (.+) (won|lost) · (.+)$/,(m,a,b,c,d)=>`${a} ${b} ${c=='won'?'ganho':'perdido'} · ${d}`],[/^✓ (RP-\d+) marked paid · (.+)$/,(m,a,b)=>`✓ ${a} marcada como paga · ${b}`],[/^(✓ )?(.+) → (.+)$/,(m,a,b,c)=>`${a||''}${b} → ${T[c]||c}`]];
 function tr(root=document.body){if(lang!='pt'||!root)return;const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){const o=n.nodeValue,t=o.trim();if(!t)continue;let r=T[(n.parentNode.tagName=='H1'?'h1:':'')+t]||T[t];if(!r){r=t;for(const [re,f] of RU)if(re.test(t)){r=t.replace(re,f);break}}r=r.replace(/\b(Feb|Apr|May|Aug|Sep|Oct|Dec)\b/g,m=>MO[m]);if(r!==t)n.nodeValue=o.replace(t,r)}root.querySelectorAll&&root.querySelectorAll('[placeholder]').forEach(e=>{e.placeholder=T[e.placeholder]||e.placeholder})}
-const M=['Nov','Dec','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct'],REV=[70,52,88,105,78,58,62,38,92,80,95,100];
+const M12=['Nov','Dec','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct'],M6=['May','Jun','Jul','Aug','Sep','Oct'];
+const REV12=[70,52,88,105,78,58,62,38,92,80,95,100],REV6=[58,62,38,92,80,95];
 const SEG=[[95,2,2],[3,25,18],[50,35,0],[112,0,0],[48,12,8],[88,0,18],[38,15,10],[22,0,14],[62,38,8],[30,30,0],[58,32,12],[78,40,0]],SC=['var(--g)','var(--r)','var(--y)'];
 const NEWC=[0,0,1,1,1,3,3,2,2,1,2,4];
 function curve(p,w,h,max,pad=0){const x=i=>i*w/(p.length-1),y=v=>h-v/max*h+pad;let d=`M${x(0)},${y(p[0])}`;for(let i=1;i<p.length;i++){const c=(x(i-1)+x(i))/2;d+=` C${c},${y(p[i-1])} ${c},${y(p[i])} ${x(i)},${y(p[i])}`}return d}
@@ -257,17 +259,19 @@ let toastT;function toast(h,u){const t=$('#t');t.innerHTML=h+(u?'<b id="un">Undo
 const openM=(h,c='')=>{$('#mb').className='mb '+c;$('#mb').innerHTML=h;tr($('#mb'));$('#m').classList.add('show')},closeM=()=>$('#m').classList.remove('show');
 const dealEl=(d,i=0)=>`<div class="deal ${d.s}" draggable="true" data-id="${d.id}" style="animation-delay:${i*40}ms"><span class="m">•••</span><small>Closes ${d.d}</small><h4>${d.t}</h4><small>${d.c}</small><div class="f"><span class="a">${F(d.a)}</span>${stack()}</div></div>`;
 const stat=(i,b,s)=>`<div><i>${i}</i><span><b>${b}</b><small>${s}</small></span></div>`;
-const seg=(a,o)=>`<div class="seg">${a.map(x=>`<span class="${x==o?'on':''}">${x}</span>`).join('')}</div>`;
+const seg=(a,o,attr='')=>`<div class="seg">${a.map(x=>`<span class="${x==o?'on':''}" ${attr}="${x}">${x}</span>`).join('')}</div>`;
 const V={
-Overview(){return `<h1>Sales<br>Overview</h1><div class="stats">${stat('🏆',`${F(112560)} <span class="tag">+5% vs last month</span>`,'Won this month')}${stat('▮',F(dsum()),'Open pipeline')}${stat('◔','75%','Win rate, closed deals')}</div>
-<div class="card" style="position:relative"><div class="ch"><span>Revenue</span><span class="r">${seg(['6M','12M'],'12M')}<button class="rb">•••</button><button class="rb">↗</button></span></div>
-<div class="big">$1,014,640<small>won in 12 months · <b style="color:var(--ink)">0</b> of 12 at target</small></div><div style="font-size:11px;color:var(--mut);margin:6px 0"><span style="color:var(--r)">●</span> Won revenue &nbsp; - - Monthly target · $156.7K</div>
+Overview(){ 
+  const total = invs.filter(v=>v.s=='Paid').reduce((a,v)=>a+v.a,0) + deals.filter(d=>d.s=='C').reduce((a,d)=>a+d.a,0);
+  return `<h1>Sales<br>Overview</h1><div class="stats">${stat('🏆',`${F(112560)} <span class="tag">+5% vs last month</span>`,'Won this month')}${stat('▮',F(dsum()),'Open pipeline')}${stat('◔','75%','Win rate, closed deals')}</div>
+<div class="card" style="position:relative"><div class="ch"><span>Revenue</span><span class="r">${seg(['6M','12M'],chartMonths,'data-chart')}<button class="rb">•••</button><button class="rb">↗</button></span></div>
+<div class="big" id="revTotal">${F(total)}<small>won in ${chartMonths} · <b style="color:var(--ink)">0</b> of 12 at target</small></div><div style="font-size:11px;color:var(--mut);margin:6px 0"><span style="color:var(--r)">●</span> Won revenue &nbsp; - - Monthly target · $156.7K</div>
 <svg id="rc" viewBox="0 0 700 230" width="100%" style="touch-action:none"><defs><linearGradient id="gg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d0451b" stop-opacity=".28"/><stop offset="1" stop-color="#d0451b" stop-opacity="0"/></linearGradient></defs>
 ${[0,1,2].map(i=>`<text x="0" y="${12+i*95}" font-size="10" fill="currentColor" opacity=".5">${['$200K','$100K','$0'][i]}</text>`).join('')}
 <line x1="40" y1="64" x2="700" y2="64" stroke="currentColor" stroke-dasharray="6 5" opacity=".8"/>
-<g transform="translate(40,0)"><path d="${curve(REV,660,190,130,12)} L660,202 L0,202Z" fill="url(#gg)"/><path class="path" pathLength="1" d="${curve(REV,660,190,130,12)}" fill="none" stroke="#d0451b" stroke-width="2.2"/>
+<g transform="translate(40,0)"><path id="revPath" d="${curve(chartMonths=='6M'?REV6:REV12,660,190,130,12)} L660,202 L0,202Z" fill="url(#gg)"/><path id="revLine" class="path" pathLength="1" d="${curve(chartMonths=='6M'?REV6:REV12,660,190,130,12)}" fill="none" stroke="#d0451b" stroke-width="2.2"/>
 <line id="cl" y1="0" y2="202" stroke="currentColor" opacity="0" stroke-dasharray="3 3"/><circle id="cd" r="4.5" fill="#d0451b" stroke="#fff" stroke-width="2" opacity="0"/></g>
-${M.map((m,i)=>`<text x="${40+i*60}" y="224" font-size="10" fill="currentColor" opacity=".5" text-anchor="middle">${m}</text>`).join('')}</svg></div>
+<g id="chartX">${(chartMonths=='6M'?M6:M12).map((m,i,a)=>`<text x="${40+(i*660)/(a.length-1)}" y="224" font-size="10" fill="currentColor" opacity=".5" text-anchor="middle">${m}</text>`).join('')}</g></svg></div>
 <div class="card"><div class="ch"><span>Hot deals</span><span class="r">by weighted value <button class="rb">+</button><button class="rb">↗</button></span></div><div class="g3">${[...deals].sort((a,b)=>b.a-a.a).filter(d=>d.s!='Q').slice(0,6).map((d,i)=>dealEl(d,i)).join('')}</div></div>
 <div class="two"><div class="quota"><div class="ch">Team quota<button class="rb" style="border-color:#fff4">•••</button></div><svg viewBox="0 0 120 120" width="100%" style="max-width:190px;display:block;margin:auto"><circle cx="60" cy="60" r="48" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="9"/><circle class="path" pathLength="1" style="stroke-dasharray:1;stroke-dashoffset:.76" cx="60" cy="60" r="48" fill="none" stroke="#f2c53d" stroke-width="9" stroke-linecap="round" transform="rotate(-90 60 60)"/><text x="60" y="64" text-anchor="middle" fill="#fff" font-size="24">24%</text><text x="60" y="80" text-anchor="middle" fill="#fff" font-size="8" opacity=".7">of Q4 quota</text></svg></div>
 <div class="card" style="margin:0 0 14px"><div class="ch"><span>Stage mix</span><button class="rb">↗</button></div><div class="big">${F(dsum())}<small>open across ${deals.length} deals</small></div><div class="mix"><div style="flex:3;background:var(--y)"></div><div style="flex:1;background:var(--g)"></div><div style="flex:3;background:var(--r)"></div><div style="flex:3;background:var(--k)"></div></div><small style="color:var(--mut);font-size:12px">● Qualification</small></div></div>`},
@@ -287,20 +291,24 @@ Growth(){return `<h1>Growth<br>Reports</h1><div class="stats">${stat('👥','20'
 <div class="tools" style="justify-content:flex-end">${seg(['3M','6M','12M'],'12M')}<button class="btn">⤓ Export CSV</button></div>
 <div class="card"><div class="ch"><span>Revenue by segment</span><span class="r">${seg(['$','%'],'$')}<button class="rb">↗</button></span></div><div class="big">$1,017,005<small>won, last 12 months</small></div>
 <div style="margin:10px 0"><span class="pill"><i style="background:var(--g)"></i>Enterprise $677.4K</span><span class="pill"><i style="background:var(--r)"></i>Mid-market $272.5K</span><span class="pill"><i style="background:var(--y)"></i>SMB $72.5K</span></div>
-<div class="bars">${SEG.map(s=>`<div class="b">${s.map((v,i)=>`<u style="height:${v/200*100}%;background:${SC[i]}"></u>`).join('')}</div>`).join('')}</div><div class="lab">${M.map(m=>`<span>${m}</span>`).join('')}</div></div>
+<div class="bars">${SEG.map(s=>`<div class="b">${s.map((v,i)=>`<u style="height:${v/200*100}%;background:${SC[i]}"></u>`).join('')}</div>`).join('')}</div><div class="lab">${M12.map(m=>`<span>${m}</span>`).join('')}</div></div>
 <div class="two" style="grid-template-columns:1fr 1fr"><div class="card"><div class="ch"><span>Lead sources</span><button class="rb">↗</button></div><small style="color:var(--mut);font-size:11px">How the 20 customers who joined in the last 12 months reached us.</small>
 <svg viewBox="0 0 120 120" width="100%" style="max-width:170px;display:block;margin:10px auto">${(()=>{let o=0;return [[12,'#1f6fd0'],[12,'#5b5bf0'],[11,'#2e9d6b'],[11,'#2d5e4e'],[9,'#8a4fb0'],[5,'#d0451b']].map(([n,c])=>{const l=n/60,s=`<circle class="path" pathLength="1" style="stroke-dasharray:${l-.012} 1;stroke-dashoffset:${-o};animation:none" cx="60" cy="60" r="46" fill="none" stroke="${c}" stroke-width="10" transform="rotate(-90 60 60)"/>`;o+=l;return s}).join('')})()}<text x="60" y="62" text-anchor="middle" font-size="22" fill="currentColor">20</text><text x="60" y="76" text-anchor="middle" font-size="7" fill="currentColor" opacity=".6">new customers</text></svg>
 <div class="leg">${[['LinkedIn',12,'20%','#1f6fd0'],['Discord',12,'20%','#5b5bf0'],['WhatsApp',11,'18%','#2e9d6b'],['Website',11,'18%','#2d5e4e'],['Slack',9,'15%','#8a4fb0'],['Email',5,'8%','#d0451b']].map(l=>`<span><i style="background:${l[3]}"></i>${l[0]}<b>${l[1]} ${l[2]}</b></span>`).join('')}</div></div>
-<div class="card"><div class="ch"><span>New customers per month</span><button class="rb">↗</button></div><div class="big">20<small>joined in the last 12 months</small></div><div class="bars" style="height:150px;margin-top:10px">${NEWC.map((v,i)=>`<div class="b"><u style="height:${v/6*100}%;background:${i==11?'var(--r)':'var(--k)'};border-radius:8px 8px 0 0"></u></div>`).join('')}</div><div class="lab">${M.map(m=>`<span>${m.slice(0,2)}</span>`).join('')}</div></div></div>
+<div class="card"><div class="ch"><span>New customers per month</span><button class="rb">↗</button></div><div class="big">20<small>joined in the last 12 months</small></div><div class="bars" style="height:150px;margin-top:10px">${NEWC.map((v,i)=>`<div class="b"><u style="height:${v/6*100}%;background:${i==11?'var(--r)':'var(--k)'};border-radius:8px 8px 0 0"></u></div>`).join('')}</div><div class="lab">${M12.map(m=>`<span>${m.slice(0,2)}</span>`).join('')}</div></div></div>
 <div class="card"><div class="ch"><span>Win rate trend</span><button class="rb">↗</button></div><div class="big">75%<small>45 won of 60 closed</small></div></div>`},
 Schedule(){return `<h1>Schedule</h1><div class="card" style="color:var(--mut)">Calendar coming soon.</div>`},Projects(){return `<h1>Projects</h1><div class="card" style="color:var(--mut)">Projects coming soon.</div>`}};
 let cf='All',cv='Grid',q='',cur='Overview',fav=false,user=null,isAdmin=false;
 function custList(){const l=cust.filter(c=>(cf=='All'||c.seg==cf)&&(!fav||c.f)&&(c.n+c.co).toLowerCase().includes(q));
 $('#cl').innerHTML=cv=='Grid'?`<div class="cg">${l.map((c,i)=>`<div class="cc" style="animation-delay:${i*45}ms"><div class="top"><span class="av" style="background:${hue(c.n)}">${c.n.split(' ').map(x=>x[0]).join('')}</span><button class="star ${c.f?'on':''}" data-s="${c.i}">★</button></div><h6>${c.n}</h6><p>${c.r} · ${c.co}</p><div class="mini"><span><small>Open pipeline</small>${F(c.p)}</span><span><small>Last contact</small>${c.l}</span></div><div class="sc"><i><u style="width:${c.sc}%;background:${c.sc>70?'var(--g)':'var(--r)'}"></u></i>${c.sc}</div><div class="cf"><span class="st Draft">${c.seg}</span><span><button>✉</button><button>✆</button></span></div></div>`).join('')}</div>`:`<div class="card"><table><tr><th>Name<th>Company<th>Segment<th>Pipeline<th>Last contact</tr>${l.map(c=>`<tr><td>${c.n}<td>${c.co}<td>${c.seg}<td>${F(c.p)}<td>${c.l}</tr>`).join('')}</table></div>`;tr($('#cl'));}
 function go(n){cur=n;$('#nav').innerHTML=tabs.map(t=>`<button class="${t==n?'on':''}" data-t="${t}">${t}</button>`).join('');$('#v').innerHTML=V[n]();scrollTo({top:0,behavior:'smooth'});if(n=='Customers')custList();if(n=='Overview')chart();tr($('#nav'));tr($('#v'));save()}
-function chart(){const s=$('#rc'),tip=$('#tip');if(!s)return;const mv=e=>{const r=s.getBoundingClientRect(),px=((e.touches?e.touches[0].clientX:e.clientX)-r.left)/r.width*700-40,i=Math.max(0,Math.min(11,Math.round(px/60))),x=i*60;
-$('#cl').setAttribute('x1',x);$('#cl').setAttribute('x2',x);$('#cl').setAttribute('opacity','.4');$('#cd').setAttribute('cx',x);$('#cd').setAttribute('cy',190-REV[i]/130*190+12);$('#cd').setAttribute('opacity','1');
-tip.innerHTML=`<b>${M[i]}</b><br><span style="color:var(--r)">●</span> Won ${K(REV[i]*1000)}<br>● Target $156.7K`;tr(tip);tip.style.opacity=1;tip.style.left=(scrollX+r.left+(x+40)/700*r.width+12)+'px';tip.style.top=(scrollY+r.top+40)+'px'};
+function chart(){const s=$('#rc'),tip=$('#tip');if(!s)return;const mv=e=>{const r=s.getBoundingClientRect(),px=((e.touches?e.touches[0].clientX:e.clientX)-r.left)/r.width*700-40;
+const data = chartMonths=='6M'?REV6:REV12;
+const step = chartMonths=='6M'?132:60;
+const i=Math.max(0,Math.min(data.length-1,Math.round(px/step))),x=i*step;
+$('#cl').setAttribute('x1',x);$('#cl').setAttribute('x2',x);$('#cl').setAttribute('opacity','.4');$('#cd').setAttribute('cx',x);$('#cd').setAttribute('cy',190-data[i]/130*190+12);$('#cd').setAttribute('opacity','1');
+const month=(chartMonths=='6M'?M6:M12)[i];
+tip.innerHTML=`<b>${month}</b><br><span style="color:var(--r)">●</span> Won ${K(data[i]*1000)}<br>● Target $156.7K`;tr(tip);tip.style.opacity=1;tip.style.left=(scrollX+r.left+(x+40)/700*r.width+12)+'px';tip.style.top=(scrollY+r.top+40)+'px'};
 s.onmousemove=mv;s.ontouchmove=mv;s.onmouseleave=()=>{tip.style.opacity=0;$('#cl').setAttribute('opacity','0');$('#cd').setAttribute('opacity','0')}}
 
 /* ===== SUPABASE ===== */
@@ -416,6 +424,9 @@ document.addEventListener('click',e=>{
   if(e.target.id==='authBtn'){doAuth();return}
   if(e.target.id==='togglePass'){const p=$('#authPass');const t=e.target;p.type=p.type==='password'?'text':'password';t.textContent=p.type==='password'?'👁️':'🙈';return}
   if(e.target.id==='togglePass2'){const p=$('#authPass2');const t=e.target;p.type=p.type==='password'?'text':'password';t.textContent=p.type==='password'?'👁️':'🙈';return}
+  
+  const ch=e.target.closest('[data-chart]');
+  if(ch){chartMonths=ch.dataset.chart;go('Overview');return}
 });
 document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&!$('#auth').classList.contains('hide')){
