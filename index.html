@@ -117,9 +117,58 @@ tr.r{cursor:pointer;transition:.15s}tr.r:hover td{background:var(--in)}
 .sync.on b{background:var(--g)}
 .field{display:block;font-size:12px;color:var(--mut);margin-top:10px}
 .field input,.field select{width:100%;margin-top:4px}
+
+/* ===== TELA DE LOGIN ===== */
+#auth{position:fixed;inset:0;display:grid;place-items:center;z-index:100;padding:20px;background:linear-gradient(150deg,var(--bg1),var(--bg2) 70%);overflow:auto}
+#auth.hide{display:none}
+.authBox{width:100%;max-width:400px;background:var(--card);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.5);border-radius:30px;padding:32px 24px;box-shadow:0 30px 60px rgba(60,40,20,.15);animation:rise .5s both}
+.authBox .brand{display:flex;align-items:center;gap:10px;font-size:24px;font-weight:500;justify-content:center;margin-bottom:6px}
+.authBox .brand b{width:40px;height:40px;border-radius:12px;background:var(--k);color:#fff;display:grid;place-items:center;font-weight:500;font-size:20px}
+.authBox h2{text-align:center;font-size:18px;font-weight:500;margin:12px 0 24px;color:var(--mut)}
+.authBox .tab{display:flex;background:var(--in);border-radius:99px;padding:3px;margin-bottom:20px}
+.authBox .tab span{flex:1;text-align:center;padding:8px;border-radius:99px;font-size:13px;cursor:pointer;transition:.2s;font-weight:500}
+.authBox .tab span.on{background:var(--k);color:#fff}
+.authBox label{display:block;font-size:12px;color:var(--mut);margin-bottom:6px;margin-top:14px}
+.authBox input{width:100%;background:var(--in);border:1px solid transparent;border-radius:14px;padding:13px 16px;font:inherit;font-size:14px;color:var(--ink);outline:0;transition:.2s}
+.authBox input:focus{border-color:var(--k);background:var(--pill)}
+.authBox button.primary{width:100%;background:var(--k);color:#fff;border:0;border-radius:14px;padding:14px;font-size:14.5px;font-weight:500;margin-top:20px;transition:.2s}
+.authBox button.primary:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(0,0,0,.2)}
+.authBox button.primary:disabled{opacity:.5;cursor:wait}
+.authBox .msg{margin-top:14px;font-size:13px;text-align:center;min-height:20px;color:var(--mut)}
+.authBox .msg.err{color:var(--r)}
+.authBox .msg.ok{color:var(--g)}
+.authBox .foot{text-align:center;font-size:12px;color:var(--mut);margin-top:20px}
+.authBox .foot a{color:var(--ink);cursor:pointer;text-decoration:underline}
 </style>
 </head>
 <body>
+
+<!-- ===== TELA DE LOGIN ===== -->
+<div id="auth">
+  <div class="authBox">
+    <div class="brand"><b>R</b>rapport</div>
+    <h2 id="authTitle">Entre na sua conta</h2>
+    <div class="tab">
+      <span class="on" data-mode="login">Entrar</span>
+      <span data-mode="signup">Criar conta</span>
+    </div>
+    <label>E-mail</label>
+    <input type="email" id="authEmail" placeholder="seu@email.com" autocomplete="email">
+    <label>Senha</label>
+    <input type="password" id="authPass" placeholder="Mínimo 6 caracteres" autocomplete="current-password">
+    <div id="confirmWrap" style="display:none">
+      <label>Confirmar senha</label>
+      <input type="password" id="authPass2" placeholder="Repita a senha" autocomplete="new-password">
+    </div>
+    <button class="primary" id="authBtn">Entrar</button>
+    <div class="msg" id="authMsg"></div>
+    <div class="foot" id="authFoot">
+      <span id="authSwitch">Não tem conta? <a>Criar uma</a></span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== APP ===== -->
 <div id="side"></div>
 <div class="wrap">
 <header>
@@ -135,6 +184,7 @@ tr.r{cursor:pointer;transition:.15s}tr.r:hover td{background:var(--in)}
 </div>
 <div class="modal" id="m"><div class="mb" id="mb"></div></div>
 <input type="file" id="imp" accept=".json" hidden><div id="t"></div><div id="tip"></div>
+
 <script>
 /* ===== SUPABASE CONFIG ===== */
 const SUPA_URL = 'https://qzwvebazzgwmwfmwemui.supabase.co';
@@ -162,7 +212,7 @@ function save(){clearTimeout(_saveTimer);_saveTimer=setTimeout(()=>{
   cloudSave();
 },300)}
 const isum=s=>invs.filter(v=>v.s==s).reduce((a,v)=>a+v.a,0),dsum=()=>deals.reduce((s,d)=>s+d.a,0);
-const T={"Overview":"Visão geral","Pipeline":"Funil","Customers":"Clientes","Schedule":"Agenda","Finance":"Financeiro","Growth":"Crescimento","Projects":"Projetos","h1:Sales":"Panorama","h1:Overview":"de vendas","h1:Deal":"Funil","h1:Pipeline":"de negócios","h1:Customer":"Diretório","h1:Directory":"de clientes","h1:Revenue &":"Receitas e","h1:Invoices":"Faturas","h1:Growth":"Relatórios","h1:Reports":"de crescimento","Won this month":"Ganhos no mês","Open pipeline":"Funil aberto","Win rate, closed deals":"Taxa de vitória, negócios fechados","+5% vs last month":"+5% vs mês passado","Revenue":"Receita","won in 12 months ·":"ganhos em 12 meses ·","of 12 at target":"de 12 na meta","Hot deals":"Negócios quentes","by weighted value":"por valor ponderado","Team quota":"Meta da equipe","of Q4 quota":"da meta do T4","Stage mix":"Mix de etapas","Qualification":"Qualificação","Proposal":"Proposta","Negotiation":"Negociação","Closing":"Fechamento","Won":"Ganho","Lost":"Perdido","Drop to win":"Solte para ganhar","Drop to lose":"Solte para perder","Weighted forecast":"Previsão ponderada","Deals closing this month":"Negócios fechando no mês","Search deals…":"Buscar negócios…","Board":"Quadro","List":"Lista","+ New deal":"+ Novo negócio","+4 this week":"+4 esta semana","Customers in your book":"Clientes na sua carteira","Contacted in the last 7 days":"Contatados nos últimos 7 dias","Open pipeline across this book":"Funil aberto na carteira","Search name, company, city…":"Buscar nome, empresa, cidade…","All":"Todos","Enterprise":"Corporativo","Mid-market":"Médio porte","SMB":"PME","≡ Last contacted":"≡ Último contato","Grid":"Cards","Table":"Tabela","⤓ Export":"⤓ Exportar","+ New customer":"+ Novo cliente","Last contact":"Último contato","Name":"Nome","Company":"Empresa","Segment":"Segmento","Collected this month":"Recebido no mês","Outstanding, not yet due":"A receber, ainda não vencido","Overdue":"Vencido","Cash flow":"Fluxo de caixa","Aging":"Envelhecimento","Unpaid invoices by age since issue":"Faturas em aberto por idade desde a emissão","Invoices":"Faturas","+ New invoice":"+ Nova fatura","Invoice":"Fatura","Customer":"Cliente","Issued":"Emitida","Due date":"Vencimento","Due":"A vencer","Amount":"Valor","Status":"Status","Paid":"Paga","Draft":"Rascunho","INVOICE":"FATURA","FROM":"DE","BILL TO":"COBRAR DE","Terms":"Condições","Net 30":"30 dias","Description":"Descrição","Subtotal":"Subtotal","Tax (reverse charge)":"Imposto (autoliquidação)","Total due":"Total a pagar","Total paid":"Total pago","PAID":"PAGO","✓ Mark paid":"✓ Marcar como paga","⤓ Download":"⤓ Baixar","🔗 Copy link":"🔗 Copiar link","Expected close":"Fechamento previsto","Probability":"Probabilidade","Weighted":"Ponderado","▤ Wants a pilot before committing the wider team.":"▤ Quer um piloto antes de envolver o time todo.","Open in pipeline":"Abrir no funil","New customers, last 12 months":"Novos clientes, últimos 12 meses","Average won deal":"Ticket médio ganho","Average sales cycle, days":"Ciclo médio de vendas, dias","⤓ Export CSV":"⤓ Exportar CSV","Revenue by segment":"Receita por segmento","won, last 12 months":"ganhos, últimos 12 meses","Lead sources":"Origem dos leads","How the 20 customers who joined in the last 12 months reached us.":"Como os 20 clientes dos últimos 12 meses chegaram até nós.","new customers":"novos clientes","New customers per month":"Novos clientes por mês","joined in the last 12 months":"entraram nos últimos 12 meses","Win rate trend":"Evolução da taxa de vitória","45 won of 60 closed":"45 ganhos de 60 fechados","Email":"E-mail","Calendar coming soon.":"Agenda em breve.","Projects coming soon.":"Projetos em breve.","Undo":"Desfazer","⤓ Download started":"⤓ Download iniciado","🔗 Link copied":"🔗 Link copiado","Showing starred only":"Mostrando só favoritos","Showing all":"Mostrando todos","Saved":"Salvo","New deal":"Novo negócio","Deal name":"Nome do negócio","Value":"Valor","Stage":"Etapa","Expected close (e.g. Nov 12)":"Fechamento previsto (ex.: 12 nov)","Save":"Salvar","New customer":"Novo cliente","Role":"Cargo","Open pipeline value":"Valor em negociação","New invoice":"Nova fatura","Contact":"Contato","City":"Cidade","Due date (e.g. Nov 30)":"Vencimento (ex.: 30 nov)","Settings":"Ajustes","Language":"Idioma","Your data":"Seus dados","Saved on this device only (this browser/app).":"Salvos somente neste aparelho (neste navegador/app).","Clear sample data":"Apagar dados de exemplo","Restore sample data":"Restaurar dados de exemplo","Export backup":"Exportar backup","Import backup":"Importar backup","Search deals, customers, invoices…":"Buscar negócios, clientes, faturas…","No results":"Nenhum resultado","Deal":"Negócio","Notifications":"Notificações","Mark all as read":"Marcar todas como lidas","Your profile":"Seu perfil","Change photo":"Trocar foto","Remove":"Remover","Photo updated":"Foto atualizada","Photo removed":"Foto removida","Sync":"Sincronizar","Sign in":"Entrar","Sign out":"Sair","Logged in as":"Logado como","Local only":"Só neste aparelho","Cloud sync on":"Sincronização ativa","Account":"Conta","Enter your email":"Digite seu e-mail","Password":"Senha","Create account":"Criar conta","Sign up":"Cadastrar","Have account? Sign in":"Já tem conta? Entrar","No account? Sign up":"Não tem conta? Cadastrar","Admin panel":"Painel admin","Only admins can see this":"Só admins veem isso","Users":"Usuários","You are admin":"Você é admin","You are not admin":"Você não é admin","Toggle admin":"Alternar admin","Refresh":"Atualizar","Email":"E-mail","Joined":"Entrou","Password updated":"Senha atualizada","Login ok":"Login feito","Signup ok check email":"Cadastro feito, confirme o e-mail"};
+const T={"Overview":"Visão geral","Pipeline":"Funil","Customers":"Clientes","Schedule":"Agenda","Finance":"Financeiro","Growth":"Crescimento","Projects":"Projetos","h1:Sales":"Panorama","h1:Overview":"de vendas","h1:Deal":"Funil","h1:Pipeline":"de negócios","h1:Customer":"Diretório","h1:Directory":"de clientes","h1:Revenue &":"Receitas e","h1:Invoices":"Faturas","h1:Growth":"Relatórios","h1:Reports":"de crescimento","Won this month":"Ganhos no mês","Open pipeline":"Funil aberto","Win rate, closed deals":"Taxa de vitória, negócios fechados","+5% vs last month":"+5% vs mês passado","Revenue":"Receita","won in 12 months ·":"ganhos em 12 meses ·","of 12 at target":"de 12 na meta","Hot deals":"Negócios quentes","by weighted value":"por valor ponderado","Team quota":"Meta da equipe","of Q4 quota":"da meta do T4","Stage mix":"Mix de etapas","Qualification":"Qualificação","Proposal":"Proposta","Negotiation":"Negociação","Closing":"Fechamento","Won":"Ganho","Lost":"Perdido","Drop to win":"Solte para ganhar","Drop to lose":"Solte para perder","Weighted forecast":"Previsão ponderada","Deals closing this month":"Negócios fechando no mês","Search deals…":"Buscar negócios…","Board":"Quadro","List":"Lista","+ New deal":"+ Novo negócio","+4 this week":"+4 esta semana","Customers in your book":"Clientes na sua carteira","Contacted in the last 7 days":"Contatados nos últimos 7 dias","Open pipeline across this book":"Funil aberto na carteira","Search name, company, city…":"Buscar nome, empresa, cidade…","All":"Todos","Enterprise":"Corporativo","Mid-market":"Médio porte","SMB":"PME","≡ Last contacted":"≡ Último contato","Grid":"Cards","Table":"Tabela","⤓ Export":"⤓ Exportar","+ New customer":"+ Novo cliente","Last contact":"Último contato","Name":"Nome","Company":"Empresa","Segment":"Segmento","Collected this month":"Recebido no mês","Outstanding, not yet due":"A receber, ainda não vencido","Overdue":"Vencido","Cash flow":"Fluxo de caixa","Aging":"Envelhecimento","Unpaid invoices by age since issue":"Faturas em aberto por idade desde a emissão","Invoices":"Faturas","+ New invoice":"+ Nova fatura","Invoice":"Fatura","Customer":"Cliente","Issued":"Emitida","Due date":"Vencimento","Due":"A vencer","Amount":"Valor","Status":"Status","Paid":"Paga","Draft":"Rascunho","INVOICE":"FATURA","FROM":"DE","BILL TO":"COBRAR DE","Terms":"Condições","Net 30":"30 dias","Description":"Descrição","Subtotal":"Subtotal","Tax (reverse charge)":"Imposto (autoliquidação)","Total due":"Total a pagar","Total paid":"Total pago","PAID":"PAGO","✓ Mark paid":"✓ Marcar como paga","⤓ Download":"⤓ Baixar","🔗 Copy link":"🔗 Copiar link","Expected close":"Fechamento previsto","Probability":"Probabilidade","Weighted":"Ponderado","▤ Wants a pilot before committing the wider team.":"▤ Quer um piloto antes de envolver o time todo.","Open in pipeline":"Abrir no funil","New customers, last 12 months":"Novos clientes, últimos 12 meses","Average won deal":"Ticket médio ganho","Average sales cycle, days":"Ciclo médio de vendas, dias","⤓ Export CSV":"⤓ Exportar CSV","Revenue by segment":"Receita por segmento","won, last 12 months":"ganhos, últimos 12 meses","Lead sources":"Origem dos leads","How the 20 customers who joined in the last 12 months reached us.":"Como os 20 clientes dos últimos 12 meses chegaram até nós.","new customers":"novos clientes","New customers per month":"Novos clientes por mês","joined in the last 12 months":"entraram nos últimos 12 meses","Win rate trend":"Evolução da taxa de vitória","45 won of 60 closed":"45 ganhos de 60 fechados","Email":"E-mail","Calendar coming soon.":"Agenda em breve.","Projects coming soon.":"Projetos em breve.","Undo":"Desfazer","⤓ Download started":"⤓ Download iniciado","🔗 Link copied":"🔗 Link copiado","Showing starred only":"Mostrando só favoritos","Showing all":"Mostrando todos","Saved":"Salvo","New deal":"Novo negócio","Deal name":"Nome do negócio","Value":"Valor","Stage":"Etapa","Expected close (e.g. Nov 12)":"Fechamento previsto (ex.: 12 nov)","Save":"Salvar","New customer":"Novo cliente","Role":"Cargo","Open pipeline value":"Valor em negociação","New invoice":"Nova fatura","Contact":"Contato","City":"Cidade","Due date (e.g. Nov 30)":"Vencimento (ex.: 30 nov)","Settings":"Ajustes","Language":"Idioma","Your data":"Seus dados","Saved on this device only (this browser/app).":"Salvos somente neste aparelho (neste navegador/app).","Clear sample data":"Apagar dados de exemplo","Restore sample data":"Restaurar dados de exemplo","Export backup":"Exportar backup","Import backup":"Importar backup","Search deals, customers, invoices…":"Buscar negócios, clientes, faturas…","No results":"Nenhum resultado","Deal":"Negócio","Notifications":"Notificações","Mark all as read":"Marcar todas como lidas","Your profile":"Seu perfil","Change photo":"Trocar foto","Remove":"Remover","Photo updated":"Foto atualizada","Photo removed":"Foto removida","Sync":"Sincronizar","Sign in":"Entrar","Sign out":"Sair","Logged in as":"Logado como","Local only":"Só neste aparelho","Cloud sync on":"Sincronização ativa","Account":"Conta","Enter your email":"Digite seu e-mail","Password":"Senha","Create account":"Criar conta","Sign up":"Cadastrar","Admin panel":"Painel admin","Only admins can see this":"Só admins veem isso","Users":"Usuários","You are admin":"Você é admin","You are not admin":"Você não é admin","Refresh":"Atualizar","Joined":"Entrou","Login ok":"Login feito","Signup ok check email":"Cadastro feito, confirme o e-mail","Wrong email or password":"E-mail ou senha incorretos","Fill all fields":"Preencha todos os campos","Password min 6":"Senha mínimo 6 caracteres","Passwords dont match":"Senhas não coincidem","Welcome back":"Bem-vindo de volta","Account created":"Conta criada!","First user is admin":"Primeiro usuário vira admin","User already exists":"Este e-mail já está cadastrado"};
 const MO={Feb:'Fev',Apr:'Abr',May:'Mai',Aug:'Ago',Sep:'Set',Oct:'Out',Dec:'Dez'};
 const RU=[[/^Closes (.+)$/,(m,a)=>'Fecha em '+a],[/^Opened (.+)$/,(m,a)=>'Aberto em '+a],[/^Move to (.+) ›$/,(m,a)=>'Mover para '+(T[a]||a)+' ›'],[/^open across (\d+) deals$/,(m,a)=>'em aberto em '+a+' negócios'],[/^(\d+) h ago$/,(m,a)=>'há '+a+' h'],[/^(\d+) min ago$/,(m,a)=>'há '+a+' min'],[/^(\d+) d ago$/,(m,a)=>'há '+a+' d'],[/^(\d+) late$/,(m,a)=>a+' atrasadas'],[/^Invoice (RP-\d+)$/,(m,a)=>'Fatura '+a],[/^● (Due|Paid|Draft|Overdue)$/,(m,a)=>'● '+T[a]],[/^Won (\$.+)$/,(m,a)=>'Ganho '+a],[/^Target (.+)$/,(m,a)=>'Meta '+a],[/^(Enterprise|Mid-market|SMB) (\$.+)$/,(m,a,b)=>T[a]+' '+b],[/^Please pay by (.+), 2026 to (.+), quoting (.+)\.$/,(m,a,b,c)=>`Pague até ${a} de 2026 para ${b}, citando ${c}.`],[/^Paid in full on (.+), 2026 — thank you\.$/,(m,a)=>`Pago integralmente em ${a} de 2026 — obrigado.`],[/^Qty\s+Amount$/,()=>'Qtd Valor'],[/^collected in 6 months · 74% of (.+) invoiced$/,(m,a)=>`recebido em 6 meses · 74% de ${a} faturados`],[/^Won revenue\s+- - Monthly target · (.+)$/,(m,a)=>`Receita ganha - - Meta mensal · ${a}`],[/^(🏆|✕) (.+) (won|lost) · (.+)$/,(m,a,b,c,d)=>`${a} ${b} ${c=='won'?'ganho':'perdido'} · ${d}`],[/^✓ (RP-\d+) marked paid · (.+)$/,(m,a,b)=>`✓ ${a} marcada como paga · ${b}`],[/^(✓ )?(.+) → (.+)$/,(m,a,b,c)=>`${a||''}${b} → ${T[c]||c}`]];
 function tr(root=document.body){if(lang!='pt'||!root)return;const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){const o=n.nodeValue,t=o.trim();if(!t)continue;let r=T[(n.parentNode.tagName=='H1'?'h1:':'')+t]||T[t];if(!r){r=t;for(const [re,f] of RU)if(re.test(t)){r=t.replace(re,f);break}}r=r.replace(/\b(Feb|Apr|May|Aug|Sep|Oct|Dec)\b/g,m=>MO[m]);if(r!==t)n.nodeValue=o.replace(t,r)}root.querySelectorAll&&root.querySelectorAll('[placeholder]').forEach(e=>{e.placeholder=T[e.placeholder]||e.placeholder})}
@@ -223,11 +273,25 @@ s.onmousemove=mv;s.ontouchmove=mv;s.onmouseleave=()=>{tip.style.opacity=0;$('#cl
 /* ===== SUPABASE ===== */
 function setSync(state,label){const el=$('#syncState');if(!el)return;el.className='sync'+(state?' on':'');el.querySelector('span').textContent=label}
 async function checkAdmin(){
-  if(!sb||!user){isAdmin=false;return}
+  if(!sb||!user){isAdmin=false;return false}
   try{
     const {data}=await sb.from('admins').select('user_id').eq('user_id',user.id).maybeSingle();
     isAdmin=!!data;
-  }catch(e){isAdmin=false}
+    return isAdmin;
+  }catch(e){isAdmin=false;return false}
+}
+async function ensureFirstAdmin(){
+  if(!sb||!user)return false;
+  // Se a tabela admins está vazia, este usuário vira admin
+  try{
+    const {data:all}=await sb.from('admins').select('user_id').limit(1);
+    if(!all||all.length===0){
+      await sb.from('admins').insert({user_id:user.id});
+      isAdmin=true;
+      return true;
+    }
+  }catch(e){console.warn('ensureFirstAdmin',e)}
+  return await checkAdmin();
 }
 async function cloudSave(){
   if(!sb||!user)return;
@@ -253,31 +317,78 @@ async function cloudLoad(){
     }else{cloudSave()}
   }catch(e){console.warn('cloudLoad',e);setSync(false,'local')}
 }
+async function afterLogin(){
+  if(!user){setSync(false,'local');showAuth();return}
+  await ensureFirstAdmin();
+  setSync(true,'nuvem');
+  cloudLoad();
+  hideAuth();
+}
 async function initAuth(){
-  if(!sb)return;
+  if(!sb){hideAuth();return}
   try{
     const {data:{session}}=await sb.auth.getSession();
     user=session?.user||null;
-    if(user){await checkAdmin();setSync(true,'nuvem');cloudLoad()}else{setSync(false,'local')}
+    if(user){await afterLogin()}else{showAuth()}
     sb.auth.onAuthStateChange(async(ev,sess)=>{
       user=sess?.user||null;
-      if(user){await checkAdmin();setSync(true,'nuvem');cloudLoad()}else{isAdmin=false;setSync(false,'local');go(cur)}
+      if(user){await afterLogin()}
+      else{isAdmin=false;setSync(false,'local');showAuth()}
     });
-  }catch(e){console.warn('auth',e)}
+  }catch(e){console.warn('auth',e);showAuth()}
 }
-async function loginSenha(email,password){
-  if(!sb)return toast('✕ Supabase offline');
-  const {error}=await sb.auth.signInWithPassword({email,password});
-  if(error)return toast('✕ '+error.message);
-  toast('Login ok');closeM();
+
+/* ===== TELA DE LOGIN ===== */
+let authMode='login';
+function showAuth(){$('#auth').classList.remove('hide')}
+function hideAuth(){$('#auth').classList.add('hide')}
+function setAuthMode(m){
+  authMode=m;
+  $$('.authBox .tab span').forEach(s=>s.classList.toggle('on',s.dataset.mode===m));
+  $('#authTitle').textContent=m==='login'?'Entre na sua conta':'Crie sua conta';
+  $('#authBtn').textContent=m==='login'?'Entrar':'Criar conta';
+  $('#confirmWrap').style.display=m==='signup'?'block':'none';
+  $('#authSwitch').innerHTML=m==='login'?'Não tem conta? <a>Criar uma</a>':'Já tem conta? <a>Entrar</a>';
+  $('#authMsg').textContent='';
 }
-async function signupSenha(email,password){
-  if(!sb)return toast('✕ Supabase offline');
-  const {error}=await sb.auth.signUp({email,password});
-  if(error)return toast('✕ '+error.message);
-  toast('Signup ok check email');closeM();
+function authMsg(txt,type){const m=$('#authMsg');m.textContent=txt;m.className='msg '+(type||'')}
+async function doAuth(){
+  const email=$('#authEmail').value.trim();
+  const pass=$('#authPass').value;
+  const pass2=$('#authPass2').value;
+  const btn=$('#authBtn');
+  if(!email||!pass){authMsg('Preencha todos os campos','err');return}
+  if(pass.length<6){authMsg('Senha mínimo 6 caracteres','err');return}
+  if(authMode==='signup'&&pass!==pass2){authMsg('Senhas não coincidem','err');return}
+  if(!sb){authMsg('Supabase offline','err');return}
+  btn.disabled=true;btn.textContent='Aguarde…';authMsg('');
+  try{
+    if(authMode==='login'){
+      const {error}=await sb.auth.signInWithPassword({email,password:pass});
+      if(error){authMsg(error.message.includes('Invalid')?'E-mail ou senha incorretos':error.message,'err');return}
+      authMsg('Bem-vindo de volta','ok');
+    }else{
+      const {error}=await sb.auth.signUp({email,password:pass});
+      if(error){authMsg(error.message.includes('already')?'Este e-mail já está cadastrado':error.message,'err');return}
+      authMsg('Conta criada! Entrando…','ok');
+    }
+  }catch(e){authMsg(e.message||'Erro','err')}
+  finally{btn.disabled=false;btn.textContent=authMode==='login'?'Entrar':'Criar conta'}
 }
-async function doLogout(){if(!sb)return;await sb.auth.signOut();user=null;isAdmin=false;setSync(false,'local');closeM();go(cur);toast('Saiu')}
+document.addEventListener('click',e=>{
+  const tab=e.target.closest('.authBox .tab span');
+  if(tab){setAuthMode(tab.dataset.mode);return}
+  const sw=e.target.closest('#authSwitch a');
+  if(sw){setAuthMode(authMode==='login'?'signup':'login');return}
+  if(e.target.id==='authBtn'){doAuth();return}
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!$('#auth').classList.contains('hide')){
+    if(e.target.id==='authEmail'||e.target.id==='authPass'||e.target.id==='authPass2'){doAuth()}
+  }
+});
+
+async function doLogout(){if(!sb)return;await sb.auth.signOut();user=null;isAdmin=false;setSync(false,'local');closeM();toast('Saiu')}
 
 /* ===== NOTIFICAÇÕES ===== */
 function openNotifs(){
@@ -305,7 +416,6 @@ function setAvatarUI(url){
 }
 function openAvatar(){
   const cur=localStorage.getItem('rapport-avatar')||'';
-  const logged=!!user;
   openM(`<button class="x" data-x>✕</button>
     <h2 style="margin:0 0 14px;font-size:22px;font-weight:500">Seu perfil</h2>
     <div style="display:flex;gap:16px;align-items:center;margin-bottom:16px">
@@ -313,41 +423,22 @@ function openAvatar(){
       <div style="flex:1">
         <button class="btn" id="avPick">📷 Trocar foto</button>
         ${cur?'<button class="btn o" id="avDel" style="margin-top:8px">Remover</button>':''}
-        <small style="display:block;margin-top:8px;color:var(--mut);font-size:11px">${logged?'Sincroniza na nuvem automaticamente.':'Sem login — foto salva só neste aparelho.'}</small>
       </div>
     </div>
     <div style="border-top:1px solid var(--line);padding-top:14px;margin-top:6px">
       <small style="display:block;color:var(--mut);font-size:11px;margin-bottom:8px">Conta</small>
-      ${logged
-        ? `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div style="overflow:hidden"><div style="font-size:13px;overflow:hidden;text-overflow:ellipsis">${user.email}</div><small style="color:var(--mut);font-size:11px">${isAdmin?'⭐ Você é admin':'Você não é admin'}</small></div><button class="btn o" id="avOut">Sair</button></div>${isAdmin?'<button class="btn" id="openAdmin" style="margin-top:10px;width:100%">Painel admin</button>':''}`
-        : `<div style="display:flex;flex-direction:column;gap:8px"><input class="in" id="loginEmail" type="email" placeholder="seu@email.com" style="max-width:none;width:100%"><input class="in" id="loginPass" type="password" placeholder="Senha" style="max-width:none;width:100%"><button class="btn" id="loginBtn">Entrar</button><button class="btn o" id="signupBtn">Criar conta</button></div><small style="display:block;margin-top:8px;color:var(--mut);font-size:11px">Login por e-mail e senha. Sincroniza entre aparelhos.</small>`}
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div style="overflow:hidden"><div style="font-size:13px;overflow:hidden;text-overflow:ellipsis">${user?.email||''}</div><small style="color:var(--mut);font-size:11px">${isAdmin?'⭐ Você é admin':'Usuário'}</small></div><button class="btn o" id="avOut">Sair</button></div>
+      ${isAdmin?'<button class="btn" id="openAdmin" style="margin-top:10px;width:100%">Painel admin</button>':''}
     </div>
     <input type="file" id="avFile" accept="image/*" hidden>`,'inv');
-
   document.getElementById('avPick').onclick=()=>document.getElementById('avFile').click();
   if(cur)document.getElementById('avDel').onclick=()=>{
     localStorage.removeItem('rapport-avatar');setAvatarUI('');closeM();toast('Foto removida');
-  };
-  const lb=document.getElementById('loginBtn');
-  if(lb)lb.onclick=()=>{
-    const e=document.getElementById('loginEmail').value.trim();
-    const p=document.getElementById('loginPass').value;
-    if(!e||!p)return toast('✕ Preencha e-mail e senha');
-    loginSenha(e,p);
-  };
-  const sb_=document.getElementById('signupBtn');
-  if(sb_)sb_.onclick=()=>{
-    const e=document.getElementById('loginEmail').value.trim();
-    const p=document.getElementById('loginPass').value;
-    if(!e||!p)return toast('✕ Preencha e-mail e senha');
-    if(p.length<6)return toast('✕ Senha mínimo 6 caracteres');
-    signupSenha(e,p);
   };
   const ob=document.getElementById('avOut');
   if(ob)ob.onclick=doLogout;
   const oa=document.getElementById('openAdmin');
   if(oa)oa.onclick=openAdmin;
-
   document.getElementById('avFile').onchange=e=>{
     const f=e.target.files[0];if(!f)return;
     if(f.size>4*1024*1024)return toast('✕ Imagem muito grande (máx 4MB)');
@@ -476,13 +567,12 @@ function settings(){openM(`<button class="x" data-x>✕</button><h2 style="margi
 <small style="color:var(--mut)">Language</small><div style="display:flex;gap:8px;margin:8px 0 18px"><button class="btn ${lang=='en'?'':'o'}" data-lg="en">English</button><button class="btn ${lang=='pt'?'':'o'}" data-lg="pt">Português</button></div>
 <small style="color:var(--mut)">Sincronização</small>
 <div style="margin:8px 0 18px;font-size:13px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-  <span class="sync ${user?'on':''}"><b></b><span>${user?'nuvem ('+user.email+')':'local apenas'}</span></span>
-  ${user?'<button class="btn o" id="cfgOut">Sair</button>':'<button class="btn" id="cfgIn">Entrar / Sincronizar</button>'}
+  <span class="sync on"><b></b><span>nuvem (${user?.email||''})</span></span>
+  <button class="btn o" id="cfgOut">Sair</button>
   ${isAdmin?'<button class="btn" id="cfgAdmin">Painel admin</button>':''}
 </div>
-<small style="color:var(--mut)">Seus dados</small><p style="margin:6px 0 12px;font-size:13px">${user?'Salvos na nuvem e neste aparelho.':'Salvos somente neste aparelho (neste navegador/app).'}</p>
+<small style="color:var(--mut)">Seus dados</small><p style="margin:6px 0 12px;font-size:13px">Salvos na nuvem e neste aparelho.</p>
 <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn o" data-act="export">Export backup</button><button class="btn o" data-act="import">Import backup</button><button class="btn o" data-act="clear">Clear sample data</button><button class="btn o" data-act="restore">Restore sample data</button></div>`,'inv');
-const i=$('#cfgIn');if(i)i.onclick=()=>{closeM();openAvatar()};
 const o=$('#cfgOut');if(o)o.onclick=doLogout;
 const a=$('#cfgAdmin');if(a)a.onclick=openAdmin;
 }
@@ -500,6 +590,7 @@ $('#imp').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileRe
 document.documentElement.lang=lang=='pt'?'pt-BR':'en';
 (function(){const s=localStorage.getItem('rapport-avatar');if(s)setAvatarUI(s)})();
 go('Overview');
+setAuthMode('login');
 initAuth();
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>
