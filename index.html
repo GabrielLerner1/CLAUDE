@@ -139,8 +139,6 @@ tr.r{cursor:pointer;transition:.15s}tr.r:hover td{background:var(--in)}
 .authBox .msg.ok{color:var(--g)}
 .authBox .foot{text-align:center;font-size:12px;color:var(--mut);margin-top:20px}
 .authBox .foot a{color:var(--ink);cursor:pointer;text-decoration:underline}
-
-/* Olhinho e Checkbox */
 .pass-wrap{position:relative}
 .pass-wrap input{padding-right:44px}
 .eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:0;font-size:16px;opacity:.5;padding:4px;cursor:pointer}
@@ -198,7 +196,7 @@ tr.r{cursor:pointer;transition:.15s}tr.r:hover td{background:var(--in)}
   <div class="hi">
     <span class="sync" id="syncState" title="Estado da sincronização"><b></b><span>local</span></span>
     <button class="ib" data-notif>✉</button>
-    <button class="ib dot" data-notif>🔔</button>
+    <button class="ib" data-notif>🔔</button>
     <span class="av" id="avatarBtn" style="width:38px;height:38px;background:linear-gradient(135deg,#c79a78,#5b3a2a)">M</span>
   </div>
 </header>
@@ -220,14 +218,27 @@ const stg=[['Qualification','Q',20],['Proposal','P',45],['Negotiation','N',70],[
 const PEO=[['S','#c9855f'],['R','#6b4a35'],['T','#3b2d26'],['M','#9a6a4f']];
 const stack=()=>`<span class="stack">${PEO.slice(0,3).map(p=>`<span class="av" style="background:${p[1]}">${p[0]}</span>`).join('')}</span>`;
 const hue=s=>{let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))%360;return `hsl(${h} 28% 42%)`};
-let deals=[['API access tier','Fennick & Rowe',17970,'Q','Oct 22'],['Integration build','Fennick & Rowe',28700,'Q','Dec 16'],['Annual renewal','Aldercrest Hotels',16970,'Q','Dec 19'],['Fleet licence expansion','Copperline Foods',29680,'Q','Oct 30'],['Support plan upgrade','Orchard Row Bank',64490,'Q','Dec 8'],
-['Analytics add-on','Tidewater Freight',4200,'P','Oct 21'],['Team training workshops','Fennick & Rowe',29000,'P','Nov 11'],['Annual renewal','Bell & Birch Joinery',14710,'P','Nov 20'],['Data migration package','Nimbus Health',3400,'P','Nov 24'],['Seat true-up','Northgate Cinemas',4100,'P','Nov 20'],
-['Annual renewal','Sable Freight',47100,'N','Nov 16'],['Seat true-up','Aldercrest Hotels',55430,'N','Oct 22'],['Regional expansion','Sable Freight',49040,'N','Oct 26'],['Security review','Quillon Analytics',15800,'N','Dec 20'],
-['Fleet licence expansion','Kumo Retail',56180,'C','Oct 22'],['Integration build','Aldercrest Hotels',54940,'C','Nov 10'],['Premium SLA','Aldercrest Hotels',54450,'C','Nov 16']].map((d,i)=>({id:i,t:d[0],c:d[1],a:d[2],s:d[3],d:d[4]}));
-let cust=[['Daniel Osei','VP Procurement','Brightmoor Clinics',18080,'23 h ago','Enterprise',51,1],['Clara Vos','Head of Operations','Tidewater Freight',91360,'Oct 8','Enterprise',86,1],['Grace Liu','VP Sales','Peakline Software',30460,'40 min ago','Mid-market',59,0],['Mei Tanaka','IT Director','Aldercrest Hotels',181790,'1 h ago','Enterprise',91,0],['Priya Natarajan','Head of Data','Quillon Analytics',33210,'3 h ago','SMB',58,0],['Aisha Rahman','Product Lead','Nimbus Health',3400,'7 h ago','SMB',91,0],['Kenji Arai','Director','Lumio Solar',33300,'2 d ago','Mid-market',72,0],['Noor Haddad','COO','Copperline Foods',29680,'3 d ago','Mid-market',64,0],['Sam Okafor','CTO','Fennick & Rowe',46670,'4 d ago','Enterprise',80,0],['Lena Fischer','Founder','Northgate Cinemas',4100,'5 d ago','SMB',47,0]].map((c,i)=>({i,n:c[0],r:c[1],co:c[2],p:c[3],l:c[4],seg:c[5],sc:c[6],f:c[7]}));
-let invs=[['RP-2406','Lumio Solar','Kenji Arai','Osaka','Oct 2','Nov 1',33300,'Due','Security review bundle'],['RP-2405','Tidewater Freight','Clara Vos','Hamburg','Oct 1','Oct 31',53270,'Draft','Fleet analytics rollout'],['RP-2404','Brightmoor Clinics','Daniel Osei','Leeds','Oct 1','Oct 31',8700,'Paid','Support plan'],['RP-2403','Fennick & Rowe','Sam Okafor','Oslo','Sep 28','Oct 28',21400,'Due','Integration build'],['RP-2402','Nimbus Health','Aisha Rahman','Austin','Sep 20','Oct 20',9100,'Overdue','Data migration'],['RP-2401','Aldercrest Hotels','Mei Tanaka','Lisbon','Sep 12','Oct 12',12408,'Overdue','Seat true-up']].map(v=>({id:v[0],c:v[1],p:v[2],city:v[3],i:v[4],d:v[5],a:v[6],s:v[7],it:v[8]}));
-const SK='rapport-data-v1',SD=JSON.stringify({deals,cust,invs});let lang='en';
-try{const raw=localStorage.getItem(SK);if(raw){const s=JSON.parse(raw);if(Array.isArray(s.deals))deals=s.deals;if(Array.isArray(s.cust))cust=s.cust;if(Array.isArray(s.invs))invs=s.invs;if(s.lang)lang=s.lang;if(s.theme)document.documentElement.dataset.theme=s.theme}}catch(e){console.warn('load',e)}
+const DEALS_DEFAULT=[['API access tier','Fennick & Rowe',17970,'Q','Oct 22'],['Integration build','Fennick & Rowe',28700,'Q','Dec 16'],['Annual renewal','Aldercrest Hotels',16970,'Q','Dec 19'],['Fleet licence expansion','Copperline Foods',29680,'Q','Oct 30'],['Support plan upgrade','Orchard Row Bank',64490,'Q','Dec 8'],['Analytics add-on','Tidewater Freight',4200,'P','Oct 21'],['Team training workshops','Fennick & Rowe',29000,'P','Nov 11'],['Annual renewal','Bell & Birch Joinery',14710,'P','Nov 20'],['Data migration package','Nimbus Health',3400,'P','Nov 24'],['Seat true-up','Northgate Cinemas',4100,'P','Nov 20'],['Annual renewal','Sable Freight',47100,'N','Nov 16'],['Seat true-up','Aldercrest Hotels',55430,'N','Oct 22'],['Regional expansion','Sable Freight',49040,'N','Oct 26'],['Security review','Quillon Analytics',15800,'N','Dec 20'],['Fleet licence expansion','Kumo Retail',56180,'C','Oct 22'],['Integration build','Aldercrest Hotels',54940,'C','Nov 10'],['Premium SLA','Aldercrest Hotels',54450,'C','Nov 16']].map((d,i)=>({id:i,t:d[0],c:d[1],a:d[2],s:d[3],d:d[4]}));
+const CUST_DEFAULT=[['Daniel Osei','VP Procurement','Brightmoor Clinics',18080,'23 h ago','Enterprise',51,1],['Clara Vos','Head of Operations','Tidewater Freight',91360,'Oct 8','Enterprise',86,1],['Grace Liu','VP Sales','Peakline Software',30460,'40 min ago','Mid-market',59,0],['Mei Tanaka','IT Director','Aldercrest Hotels',181790,'1 h ago','Enterprise',91,0],['Priya Natarajan','Head of Data','Quillon Analytics',33210,'3 h ago','SMB',58,0],['Aisha Rahman','Product Lead','Nimbus Health',3400,'7 h ago','SMB',91,0],['Kenji Arai','Director','Lumio Solar',33300,'2 d ago','Mid-market',72,0],['Noor Haddad','COO','Copperline Foods',29680,'3 d ago','Mid-market',64,0],['Sam Okafor','CTO','Fennick & Rowe',46670,'4 d ago','Enterprise',80,0],['Lena Fischer','Founder','Northgate Cinemas',4100,'5 d ago','SMB',47,0]].map((c,i)=>({i,n:c[0],r:c[1],co:c[2],p:c[3],l:c[4],seg:c[5],sc:c[6],f:c[7]}));
+const INVS_DEFAULT=[['RP-2406','Lumio Solar','Kenji Arai','Osaka','Oct 2','Nov 1',33300,'Due','Security review bundle'],['RP-2405','Tidewater Freight','Clara Vos','Hamburg','Oct 1','Oct 31',53270,'Draft','Fleet analytics rollout'],['RP-2404','Brightmoor Clinics','Daniel Osei','Leeds','Oct 1','Oct 31',8700,'Paid','Support plan'],['RP-2403','Fennick & Rowe','Sam Okafor','Oslo','Sep 28','Oct 28',21400,'Due','Integration build'],['RP-2402','Nimbus Health','Aisha Rahman','Austin','Sep 20','Oct 20',9100,'Overdue','Data migration'],['RP-2401','Aldercrest Hotels','Mei Tanaka','Lisbon','Sep 12','Oct 12',12408,'Overdue','Seat true-up']].map(v=>({id:v[0],c:v[1],p:v[2],city:v[3],i:v[4],d:v[5],a:v[6],s:v[7],it:v[8]}));
+
+let deals=[...DEALS_DEFAULT];
+let cust=[...CUST_DEFAULT];
+let invs=[...INVS_DEFAULT];
+const SK='rapport-data-v1',SD=JSON.stringify({deals:DEALS_DEFAULT,cust:CUST_DEFAULT,invs:INVS_DEFAULT});let lang='en';
+
+try{
+  const raw=localStorage.getItem(SK);
+  if(raw){
+    const s=JSON.parse(raw);
+    if(Array.isArray(s.deals))deals=s.deals;
+    if(Array.isArray(s.cust))cust=s.cust;
+    if(Array.isArray(s.invs))invs=s.invs;
+    if(s.lang)lang=s.lang;
+    if(s.theme)document.documentElement.dataset.theme=s.theme;
+  }
+}catch(e){console.warn('load',e)}
+
 let _saveTimer=null;
 function save(){clearTimeout(_saveTimer);_saveTimer=setTimeout(()=>{
   try{localStorage.setItem(SK,JSON.stringify({deals,cust,invs,lang,theme:document.documentElement.dataset.theme||''}))}catch(e){console.warn('save',e)}
@@ -605,8 +616,17 @@ function shareApp(){if(navigator.share)navigator.share({title:'rapport',url:loca
 function act(a){
   if(a=='export')exportB();
   if(a=='import')$('#imp').click();
-  if(a=='clear'&&confirm('Delete all sample data?')){deals=[];cust=[];invs=[];localStorage.setItem(SK,JSON.stringify({deals,cust,invs,lang,theme:document.documentElement.dataset.theme||''}));cloudSave();closeM();go(cur);toast('Saved')}
-  if(a=='restore'){const s=JSON.parse(SD);deals=s.deals;cust=s.cust;invs=s.invs;localStorage.setItem(SK,JSON.stringify({deals,cust,invs,lang,theme:document.documentElement.dataset.theme||''}));cloudSave();closeM();go(cur);toast('Saved')}
+  if(a=='clear'&&confirm('Delete all sample data?')){
+    deals=[];cust=[];invs=[];
+    localStorage.setItem(SK,JSON.stringify({deals,cust,invs,lang,theme:document.documentElement.dataset.theme||''}));
+    cloudSave();closeM();go(cur);toast('Saved');
+  }
+  if(a=='restore'){
+    const s=JSON.parse(SD);
+    deals=[...s.deals];cust=[...s.cust];invs=[...s.invs];
+    localStorage.setItem(SK,JSON.stringify({deals,cust,invs,lang,theme:document.documentElement.dataset.theme||''}));
+    cloudSave();closeM();go(cur);toast('Saved');
+  }
 }
 $('#imp').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const s=JSON.parse(r.result);deals=s.deals||[];cust=s.cust||[];invs=s.invs||[];go(cur);toast('Saved')}catch(x){toast('✕ Invalid file')}};r.readAsText(f);e.target.value=''};
 
