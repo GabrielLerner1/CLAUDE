@@ -139,6 +139,14 @@ tr.r{cursor:pointer;transition:.15s}tr.r:hover td{background:var(--in)}
 .authBox .msg.ok{color:var(--g)}
 .authBox .foot{text-align:center;font-size:12px;color:var(--mut);margin-top:20px}
 .authBox .foot a{color:var(--ink);cursor:pointer;text-decoration:underline}
+
+/* Olhinho e Checkbox */
+.pass-wrap{position:relative}
+.pass-wrap input{padding-right:44px}
+.eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:0;font-size:16px;opacity:.5;padding:4px;cursor:pointer}
+.eye:hover{opacity:1}
+.remember{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mut);margin-top:12px;cursor:pointer;user-select:none}
+.remember input{width:auto;margin:0;padding:0;accent-color:var(--k);transform:scale(1.2);cursor:pointer}
 </style>
 </head>
 <body>
@@ -154,12 +162,26 @@ tr.r{cursor:pointer;transition:.15s}tr.r:hover td{background:var(--in)}
     </div>
     <label>E-mail</label>
     <input type="email" id="authEmail" placeholder="seu@email.com" autocomplete="email">
+    
     <label>Senha</label>
-    <input type="password" id="authPass" placeholder="Mínimo 6 caracteres" autocomplete="current-password">
+    <div class="pass-wrap">
+      <input type="password" id="authPass" placeholder="Mínimo 6 caracteres" autocomplete="current-password">
+      <button class="eye" id="togglePass" type="button" title="Mostrar senha">👁️</button>
+    </div>
+
+    <label class="remember" id="rememberWrap">
+      <input type="checkbox" id="authRemember" checked>
+      Lembrar de mim
+    </label>
+
     <div id="confirmWrap" style="display:none">
       <label>Confirmar senha</label>
-      <input type="password" id="authPass2" placeholder="Repita a senha" autocomplete="new-password">
+      <div class="pass-wrap">
+        <input type="password" id="authPass2" placeholder="Repita a senha" autocomplete="new-password">
+        <button class="eye" id="togglePass2" type="button" title="Mostrar senha">👁️</button>
+      </div>
     </div>
+    
     <button class="primary" id="authBtn">Entrar</button>
     <div class="msg" id="authMsg"></div>
     <div class="foot" id="authFoot">
@@ -282,7 +304,6 @@ async function checkAdmin(){
 }
 async function ensureFirstAdmin(){
   if(!sb||!user)return false;
-  // Se a tabela admins está vazia, este usuário vira admin
   try{
     const {data:all}=await sb.from('admins').select('user_id').limit(1);
     if(!all||all.length===0){
@@ -348,6 +369,7 @@ function setAuthMode(m){
   $('#authTitle').textContent=m==='login'?'Entre na sua conta':'Crie sua conta';
   $('#authBtn').textContent=m==='login'?'Entrar':'Criar conta';
   $('#confirmWrap').style.display=m==='signup'?'block':'none';
+  $('#rememberWrap').style.display=m==='login'?'flex':'none';
   $('#authSwitch').innerHTML=m==='login'?'Não tem conta? <a>Criar uma</a>':'Já tem conta? <a>Entrar</a>';
   $('#authMsg').textContent='';
 }
@@ -381,6 +403,8 @@ document.addEventListener('click',e=>{
   const sw=e.target.closest('#authSwitch a');
   if(sw){setAuthMode(authMode==='login'?'signup':'login');return}
   if(e.target.id==='authBtn'){doAuth();return}
+  if(e.target.id==='togglePass'){const p=$('#authPass');const t=e.target;p.type=p.type==='password'?'text':'password';t.textContent=p.type==='password'?'👁️':'🙈';return}
+  if(e.target.id==='togglePass2'){const p=$('#authPass2');const t=e.target;p.type=p.type==='password'?'text':'password';t.textContent=p.type==='password'?'👁️':'🙈';return}
 });
 document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&!$('#auth').classList.contains('hide')){
